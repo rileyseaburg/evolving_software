@@ -1,0 +1,328 @@
+// Evolvere Techne HTTP server implemented in TetherScript.
+// Run: tetherscript run --grant-fs . server.tether
+
+fn content_type(path) {
+    if path.ends_with(".html") { return "text/html; charset=utf-8" }
+    if path.ends_with(".css") { return "text/css; charset=utf-8" }
+    if path.ends_with(".js") { return "application/javascript; charset=utf-8" }
+    if path.ends_with(".json") { return "application/json" }
+    if path.ends_with(".txt") { return "text/plain; charset=utf-8" }
+    if path.ends_with(".svg") { return "image/svg+xml" }
+    if path.ends_with(".ico") { return "image/x-icon" }
+    if path.ends_with(".png") { return "image/png" }
+    if path.ends_with(".jpg") { return "image/jpeg" }
+    if path.ends_with(".jpeg") { return "image/jpeg" }
+    if path.ends_with(".webp") { return "image/webp" }
+    return "application/octet-stream"
+}
+
+fn response(status, body, content_type_value) {
+    let resp = map()
+    resp.status = status
+    resp.body = body
+    let headers = map()
+    headers["content-type"] = content_type_value
+    resp.headers = headers
+    return resp
+}
+
+fn redirect(location) {
+    let resp = map()
+    resp.status = 302
+    resp.body = ""
+    let headers = map()
+    headers["location"] = location
+    headers["content-type"] = "text/plain; charset=utf-8"
+    resp.headers = headers
+    return resp
+}
+
+fn html(status, body) { return response(status, body, "text/html; charset=utf-8") }
+fn text(status, body) { return response(status, body, "text/plain; charset=utf-8") }
+
+fn html_escape(value) {
+    let mut out = str(value)
+    out = out.replace("&", "&amp;")
+    out = out.replace("<", "&lt;")
+    out = out.replace(">", "&gt;")
+    out = out.replace("\"", "&quot;")
+    out = out.replace("'", "&#39;")
+    return out
+}
+
+fn url_decode(value) {
+    let mut out = str(value)
+    out = out.replace("+", " ")
+    out = out.replace("%40", "@")
+    out = out.replace("%2F", "/")
+    out = out.replace("%3A", ":")
+    out = out.replace("%20", " ")
+    return out
+}
+
+fn parse_form(body) {
+    let form = map()
+    if body == nil || body == "" { return form }
+    for pair in body.split("&") {
+        if pair.contains("=") {
+            let pieces = pair.split("=")
+            form[url_decode(pieces[0])] = url_decode(pieces[1])
+        }
+    }
+    return form
+}
+
+fn nav_link(href, label) {
+    return "<a href='" + href + "' class='text-sm font-medium text-slate-300 hover:text-cyan-200 transition'>" + label + "</a>"
+}
+
+fn shell(title, username, content) {
+    let mut nav = nav_link("/", "Studio") + nav_link("/work", "Work") + nav_link("/about", "Method") + nav_link("/contact", "Contact")
+    if username != nil && username != "" {
+        nav = nav + nav_link("/dashboard", "Dashboard") + nav_link("/logout", "Logout")
+    } else {
+        nav = nav + nav_link("/login", "Client login")
+    }
+
+    return "<!doctype html><html lang='en' class='scroll-smooth bg-[#05070b]'>" +
+        "<head>" +
+        "<script src='https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio'></script>" +
+        "<meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+        "<meta name='description' content='Evolvere Techne is a boutique software development consultancy at evolveretechne.com for AI systems, automation platforms, product engineering, and cloud infrastructure.'>" +
+        "<title>" + html_escape(title) + " - Evolvere Techne</title>" +
+        "<style>body{background:radial-gradient(circle at 20% 0%,rgba(34,211,238,.18),transparent 32rem),radial-gradient(circle at 85% 15%,rgba(16,185,129,.16),transparent 28rem),#05070b}.glass{background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.04));border:1px solid rgba(148,163,184,.22);box-shadow:0 24px 80px rgba(0,0,0,.35)}.brand-grid{background-image:linear-gradient(rgba(148,163,184,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,.08) 1px,transparent 1px);background-size:42px 42px}</style>" +
+        "</head>" +
+        "<body class='min-h-screen text-slate-100 antialiased'>" +
+        "<div class='brand-grid min-h-screen'>" +
+        "<header class='sticky top-0 z-50 border-b border-white/10 bg-[#05070b]/80 backdrop-blur-xl'>" +
+        "<nav class='mx-auto flex max-w-7xl items-center justify-between px-6 py-5'>" +
+        "<a href='/' class='flex items-center gap-3'>" +
+        "<span class='relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-300 via-emerald-300 to-slate-100 text-sm font-black text-slate-950 shadow-lg shadow-cyan-500/20'>ES</span>" +
+        "<span><span class='block text-base font-semibold tracking-wide'>Evolvere Techne</span><span class='block text-[11px] uppercase tracking-[0.35em] text-cyan-200/70'>evolveretechne.com</span></span>" +
+        "</a>" +
+        "<div class='hidden items-center gap-8 md:flex'>" + nav + "</div>" +
+        "</nav></header>" +
+        content +
+        footer() +
+        "</div><script src='/static/js/index.js'></script></body></html>"
+}
+
+fn footer() {
+    return "<footer class='border-t border-white/10 px-6 py-12'><div class='mx-auto flex max-w-7xl flex-col gap-6 md:flex-row md:items-center md:justify-between'>" +
+        "<div><p class='font-semibold'>Evolvere Techne</p><p class='mt-1 text-sm text-slate-400'>Small senior teams for ambitious software. evolveretechne.com</p></div>" +
+        "<div class='flex flex-wrap gap-3 text-xs uppercase tracking-[0.22em] text-slate-500'><span>AI</span><span>Automation</span><span>Cloud</span><span>Product</span><span>Mobile</span></div>" +
+        "</div></footer>"
+}
+
+fn eyebrow(text_value) {
+    return "<span class='inline-flex items-center rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-100'>" + text_value + "</span>"
+}
+
+fn stat(value, label) {
+    return "<div class='rounded-3xl border border-white/10 bg-white/[0.04] p-5'><div class='text-3xl font-black text-white'>" + value + "</div><div class='mt-2 text-sm text-slate-400'>" + label + "</div></div>"
+}
+
+fn service_card(kicker, title, body) {
+    return "<article class='glass rounded-[2rem] p-7 transition hover:-translate-y-1 hover:border-cyan-200/40'>" +
+        "<p class='text-xs font-semibold uppercase tracking-[0.24em] text-emerald-200'>" + kicker + "</p>" +
+        "<h3 class='mt-4 text-2xl font-bold text-white'>" + title + "</h3>" +
+        "<p class='mt-4 leading-7 text-slate-300'>" + body + "</p>" +
+        "</article>"
+}
+
+fn work_card(title, stack, body) {
+    return "<div class='rounded-[2rem] border border-white/10 bg-slate-950/70 p-6'>" +
+        "<div class='flex items-start justify-between gap-4'><h3 class='text-xl font-bold text-white'>" + title + "</h3><span class='rounded-full bg-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-cyan-100'>" + stack + "</span></div>" +
+        "<p class='mt-4 leading-7 text-slate-300'>" + body + "</p>" +
+        "</div>"
+}
+
+fn process_step(number, title, body) {
+    return "<div class='relative pl-16'><div class='absolute left-0 top-0 flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-300 text-sm font-black text-slate-950'>" + number + "</div>" +
+        "<h3 class='text-xl font-bold text-white'>" + title + "</h3><p class='mt-2 leading-7 text-slate-300'>" + body + "</p></div>"
+}
+
+fn index_page() {
+    let content = "<main>" +
+        "<section class='relative overflow-hidden px-6 py-24 sm:py-32'>" +
+        "<div class='mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.05fr_.95fr] lg:items-center'>" +
+        "<div>" + eyebrow("Evolvere Techne / Lavon, Texas") +
+        "<h1 class='mt-8 max-w-5xl text-5xl font-black tracking-tight text-white sm:text-7xl'>Turn the expensive manual work in your business into software that runs every day.</h1>" +
+        "<p class='mt-7 max-w-2xl text-xl leading-9 text-slate-300'>If your team is copying data between tools, chasing leads by hand, losing jobs in spreadsheets, or waiting on a developer who never ships, we build the custom system that fixes the bottleneck. Evolvere means to unfold and develop. Techne means skilled craft. Evolvere Techne means we evolve your business process into working software.</p>" +
+        "<div class='mt-10 flex flex-col gap-4 sm:flex-row'><a href='/contact' class='rounded-full bg-cyan-200 px-7 py-4 text-sm font-bold text-slate-950 shadow-xl shadow-cyan-500/20 hover:bg-white'>Book a build consult</a><a href='/work' class='rounded-full border border-white/15 px-7 py-4 text-sm font-bold text-white hover:border-cyan-200/60'>See what we fix</a></div>" +
+        "</div>" +
+        "<div class='glass rounded-[2.5rem] p-6'>" +
+        "<div class='rounded-[2rem] border border-white/10 bg-slate-950 p-6'>" +
+        "<div class='mb-5 flex items-center gap-2'><span class='h-3 w-3 rounded-full bg-red-400'></span><span class='h-3 w-3 rounded-full bg-yellow-300'></span><span class='h-3 w-3 rounded-full bg-emerald-300'></span><span class='ml-3 text-xs text-slate-500'>evolveretechne.com</span></div>" +
+        "<pre class='whitespace-pre-wrap text-sm leading-7 text-slate-300'><span class='text-cyan-200'>offer</span> {\n  diagnose: \"find the bottleneck\"\n  build: \"replace manual work\"\n  launch: \"ship a usable system\"\n  improve: \"measure, refine, repeat\"\n}</pre>" +
+        "</div>" +
+        "<div class='mt-6 grid grid-cols-3 gap-3'>" + stat("AI", "agentic products") + stat("Cloud", "deployable infra") + stat("UX", "polished apps") + "</div>" +
+        "</div>" +
+        "</div></section>" +
+        capabilities_section() + proof_section() + process_section() + cta_section() +
+        "</main>"
+    return shell("Boutique Software Development Consultancy", "", content)
+}
+
+fn capabilities_section() {
+    return "<section class='px-6 py-20'><div class='mx-auto max-w-7xl'>" +
+        "<div class='max-w-3xl'>" + eyebrow("Problems we solve") + "<h2 class='mt-6 text-4xl font-black tracking-tight text-white sm:text-5xl'>Custom software for the places your business leaks time, leads, and money.</h2><p class='mt-5 text-lg leading-8 text-slate-300'>We do not sell buzzwords. We look for the operational choke point, then build the app, automation, AI workflow, or integration that removes it.</p></div>" +
+        "<div class='mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3'>" +
+        service_card("01 / Stop Spreadsheet Chaos", "Internal tools that run the business", "Dashboards, portals, quoting tools, scheduling systems, and admin panels that replace scattered spreadsheets and tribal knowledge.") +
+        service_card("02 / Follow Up Faster", "AI and automation that does the busywork", "Lead routing, customer follow-up, document handling, reporting, and agent workflows that keep opportunities from slipping away.") +
+        service_card("03 / Quit Rebuilding", "Cloud systems that survive growth", "APIs, deployments, observability, CI/CD, and secure infrastructure so your software can scale without constant rescue missions.") +
+        service_card("04 / Coordinate The Field", "Mobile apps for teams outside the office", "iOS and field workflows for routes, uploads, checklists, realtime updates, and customer proof when the work happens on-site.") +
+        service_card("05 / Know What Is Working", "Analytics and optimization you can act on", "Route optimization, funnels, reporting, and decision tools that show where profit is coming from and where work is getting stuck.") +
+        service_card("06 / Build The Hard Parts", "Senior engineering for serious constraints", "Performance tooling, Rust services, media pipelines, integrations, and systems work when off-the-shelf software hits a wall.") +
+        "</div></div></section>"
+}
+
+fn proof_section() {
+    return "<section id='work' class='px-6 py-20'><div class='mx-auto max-w-7xl rounded-[2.5rem] border border-white/10 bg-white/[0.03] p-8 sm:p-12'>" +
+        "<div class='flex flex-col gap-6 md:flex-row md:items-end md:justify-between'><div>" + eyebrow("Proof of range") + "<h2 class='mt-6 text-4xl font-black tracking-tight text-white'>You get a builder who has already wrestled with the hard parts.</h2></div><p class='max-w-2xl text-slate-300'>Most businesses do not need a giant agency. They need someone who can understand the money problem, choose the right tool, and ship the fix.</p></div>" +
+        "<div class='mt-10 grid gap-5 lg:grid-cols-2'>" +
+        work_card("CodeTether and A2A agent systems", "AI / MCP", "Multi-agent development workflows, model tooling, browser automation, task execution, and protocol-oriented AI infrastructure.") +
+        work_card("SpotlessBinCo and Route Funnels", "SaaS / Growth", "Route optimization, CRM-style workflows, paid acquisition automation, dashboards, payments, and mobile operations.") +
+        work_card("Qwen TTS and avatar media", "Voice / Video", "Speech generation, podcasts, avatar video generation, publishing flows, and media automation pipelines.") +
+        work_card("Kubernetes, Rust, and platform tooling", "Infra / Systems", "GitOps, Knative, CI images, Rust scanners, framework work, and deployment automation for resilient systems.") +
+        "</div></div></section>"
+}
+
+fn process_section() {
+    return "<section id='about' class='px-6 py-20'><div class='mx-auto grid max-w-7xl gap-12 lg:grid-cols-[.9fr_1.1fr] lg:items-start'>" +
+        "<div>" + eyebrow("How it works") + "<h2 class='mt-6 text-4xl font-black tracking-tight text-white sm:text-5xl'>First we find the bottleneck. Then we build the machine.</h2><p class='mt-5 text-lg leading-8 text-slate-300'>No vague digital transformation. No six-month strategy deck. We start with the process costing you money and turn it into a working system.</p></div>" +
+        "<div class='grid gap-8'>" +
+        process_step("1", "Find the leak", "We identify where time, leads, revenue, or quality are being lost before we write a line of code.") +
+        process_step("2", "Build the smallest profitable fix", "We create the first usable version: the app, automation, dashboard, AI workflow, or integration that removes the pain.") +
+        process_step("3", "Launch it where work happens", "We connect the system to real users, real data, real permissions, and a deployment process your business can trust.") +
+        process_step("4", "Improve what proves itself", "We measure what changes, keep what works, and evolve the system based on evidence instead of opinions.") +
+        "</div></div></section>"
+}
+
+fn cta_section() {
+    return "<section id='contact' class='px-6 py-24'><div class='mx-auto max-w-5xl overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-cyan-200 via-emerald-200 to-white p-10 text-slate-950 sm:p-14'>" +
+        "<p class='text-sm font-black uppercase tracking-[0.24em] text-slate-700'>Have a process that should not be manual?</p>" +
+        "<h2 class='mt-5 text-4xl font-black tracking-tight sm:text-6xl'>If a better system would save money, create revenue, or give you your week back, let us build it.</h2>" +
+        "<p class='mt-6 max-w-3xl text-lg leading-8 text-slate-700'>Good first projects: quote builders, lead follow-up automation, internal dashboards, route workflows, AI document handling, customer portals, and rebuilds of software that is too slow or too fragile.</p>" +
+        "<div class='mt-9 flex flex-col gap-4 sm:flex-row'><a href='mailto:hello@evolveretechne.com' class='rounded-full bg-slate-950 px-7 py-4 text-sm font-bold text-white hover:bg-slate-800'>hello@evolveretechne.com</a><a href='/work' class='rounded-full border border-slate-950/20 px-7 py-4 text-sm font-bold text-slate-950 hover:bg-white/50'>See what we fix</a></div>" +
+        "</div></section>"
+}
+
+fn work_page() {
+    let content = "<main class='px-6 py-24'><div class='mx-auto max-w-7xl'>" + eyebrow("Capabilities") + "<h1 class='mt-6 max-w-4xl text-5xl font-black tracking-tight text-white sm:text-7xl'>Software development across product, AI, cloud, and operations.</h1>" +
+        "<div class='mt-12 grid gap-5 md:grid-cols-2'>" +
+        work_card("AI and agent platforms", "LLM", "MCP servers, agent workflows, browser automation, model integrations, evaluation harnesses, and AI-assisted business operations.") +
+        work_card("Business automation", "Ops", "Workflow software that connects APIs, databases, CRMs, marketing channels, finance systems, and field teams.") +
+        work_card("Web and SaaS products", "Product", "Customer-facing apps, admin portals, landing pages, dashboards, payments, auth, and reporting.") +
+        work_card("Cloud infrastructure", "Platform", "Docker, Kubernetes, GitOps, CI/CD, deployment pipelines, monitoring, and production recovery.") +
+        work_card("Mobile and realtime systems", "Mobile", "iOS field apps, realtime updates, media upload, route workflows, and API-backed mobile experiences.") +
+        work_card("Rust and systems tooling", "Systems", "Performance-focused services, CLI tools, parsers, scanners, and framework-level engineering.") +
+        "</div></div></main>"
+    return shell("Work", "", content)
+}
+
+fn about_page() {
+    let content = "<main class='px-6 py-24'><div class='mx-auto grid max-w-7xl gap-12 lg:grid-cols-[.9fr_1.1fr]'>" +
+        "<div>" + eyebrow("Method") + "<h1 class='mt-6 text-5xl font-black tracking-tight text-white sm:text-7xl'>Software should either make money, save time, reduce risk, or it should not exist.</h1></div>" +
+        "<div class='space-y-6 text-lg leading-9 text-slate-300'><p>Evolvere Techne is for owners and operators who are tired of duct-taped tools, repeated manual work, and software projects that never reach the finish line.</p><p>The name is the promise: <em class='text-cyan-100'>evolvere</em> means to unfold, develop, and evolve. <em class='text-cyan-100'>Techne</em> means craft, art, and skilled making. Together, Evolvere Techne means evolving a business problem into crafted software that works.</p><p>We use the right level of technology for the job: sometimes a simple dashboard, sometimes an AI workflow, sometimes a cloud platform, mobile app, or Rust system. The point is not novelty. The point is leverage.</p><p>The result is software that starts with a painful bottleneck, proves value quickly, and keeps improving as your business learns.</p></div>" +
+        "</div>" + process_section() + "</main>"
+    return shell("Method", "", content)
+}
+
+fn contact_page() {
+    let content = "<main>" + cta_section() + "<section class='px-6 pb-24'><div class='mx-auto grid max-w-5xl gap-5 md:grid-cols-3'>" + stat("1", "focused discovery call") + stat("2-4 wks", "typical first prototype") + stat("Senior", "engineering from day one") + "</div></section></main>"
+    return shell("Contact", "", content)
+}
+
+fn login_page(error, message) {
+    let mut notice = ""
+    if error != nil && error != "" { notice = "<div class='rounded-2xl border border-red-400/30 bg-red-400/10 p-4 text-center text-red-100'>" + html_escape(error) + "</div>" }
+    if message != nil && message != "" { notice = "<div class='rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-4 text-center text-emerald-100'>" + html_escape(message) + "</div>" }
+    let content = "<main class='px-6 py-24'><div class='mx-auto max-w-md glass rounded-[2rem] p-8'>" +
+        "<div class='mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-200 font-black text-slate-950'>ES</div>" +
+        "<h1 class='mt-8 text-center text-3xl font-black text-white'>Client login</h1><p class='mt-3 text-center text-slate-400'>Prototype access for the TetherScript migration.</p>" + notice +
+        "<form class='mt-8 space-y-4' action='/login' method='POST'>" +
+        "<input name='username' type='text' required placeholder='Email or username' class='w-full rounded-2xl border-white/10 bg-white/10 text-white placeholder:text-slate-500'>" +
+        "<input name='password' type='password' required placeholder='Password' class='w-full rounded-2xl border-white/10 bg-white/10 text-white placeholder:text-slate-500'>" +
+        "<button type='submit' class='w-full rounded-2xl bg-cyan-200 px-5 py-3 font-bold text-slate-950 hover:bg-white'>Sign in</button>" +
+        "</form></div></main>"
+    return shell("Client Login", "", content)
+}
+
+fn dashboard_page(username) {
+    let safe_username = html_escape(username)
+    let content = "<main class='px-6 py-24'><div class='mx-auto max-w-5xl glass rounded-[2.5rem] p-10'>" + eyebrow("Client workspace") +
+        "<h1 class='mt-6 text-5xl font-black tracking-tight text-white'>Hello, " + safe_username + ".</h1>" +
+        "<p class='mt-5 max-w-2xl text-lg leading-8 text-slate-300'>Your Evolvere Techne project workspace is ready for the next iteration.</p>" +
+        "</div></main>"
+    return shell("Dashboard", username, content)
+}
+
+fn not_found_page(path) {
+    let content = "<main class='grid min-h-[70vh] place-items-center px-6 py-24'><div class='text-center'>" + eyebrow("404") +
+        "<h1 class='mt-6 text-5xl font-black text-white'>This route has not evolved yet.</h1>" +
+        "<p class='mt-5 text-slate-400'>No route exists for " + html_escape(path) + ".</p>" +
+        "<a href='/' class='mt-8 inline-flex rounded-full bg-cyan-200 px-7 py-4 text-sm font-bold text-slate-950'>Go home</a>" +
+        "</div></main>"
+    return shell("Not Found", "", content)
+}
+
+fn cookie_value(req, name) {
+    if req.headers == nil { return "" }
+    let cookie = req.headers["cookie"]
+    if cookie == nil { return "" }
+    let prefix = name + "="
+    for part in str(cookie).split(";") {
+        let item = part.trim()
+        if item.starts_with(prefix) { return item.replace(prefix, "") }
+    }
+    return ""
+}
+
+fn with_session_cookie(resp, username) {
+    resp.headers["set-cookie"] = "es_user=" + username + "; Path=/; HttpOnly; SameSite=Lax"
+    return resp
+}
+
+fn clear_session_cookie(resp) {
+    resp.headers["set-cookie"] = "es_user=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax"
+    return resp
+}
+
+fn static_file(req) {
+    let path = req.path
+    if path.contains("..") { return text(403, "forbidden\n") }
+    let file = "." + path
+    let body = fs.read(file)
+    if body.is_err() { return html(404, not_found_page(path)) }
+    return response(200, body.unwrap(), content_type(file))
+}
+
+fn handle(req) {
+    let route = req.path
+    if route.starts_with("/static/") || route == "/robots.txt" || route == "/favicon.ico" { return static_file(req) }
+    if req.method == "GET" && route == "/" { return html(200, index_page()) }
+    if req.method == "GET" && route == "/work" { return html(200, work_page()) }
+    if req.method == "GET" && route == "/about" { return html(200, about_page()) }
+    if req.method == "GET" && route == "/contact" { return html(200, contact_page()) }
+    if req.method == "GET" && route == "/login" { return html(200, login_page("", "")) }
+    if req.method == "POST" && route == "/login" {
+        let form = parse_form(req.body)
+        let username = form["username"]
+        let password = form["password"]
+        if username == nil || username == "" || password == nil || password == "" { return html(200, login_page("Invalid username or password", "")) }
+        return with_session_cookie(redirect("/dashboard"), html_escape(username))
+    }
+    if req.method == "GET" && route == "/logout" { return clear_session_cookie(html(200, login_page("", "You have been logged out."))) }
+    if req.method == "GET" && route == "/dashboard" {
+        let username = cookie_value(req, "es_user")
+        if username == nil || username == "" { return redirect("/login") }
+        return html(200, dashboard_page(username))
+    }
+    return html(404, not_found_page(route))
+}
+
+fn main() {
+    println("Starting Evolvere Techne TetherScript HTTP server on http://127.0.0.1:8787/")
+    http_serve(8787, handle)
+}

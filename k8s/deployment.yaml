@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evolveretechne
+  namespace: evolveretechne
+  labels:
+    app.kubernetes.io/name: evolveretechne
+    app.kubernetes.io/part-of: evolveretechne
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: evolveretechne
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: evolveretechne
+        app.kubernetes.io/part-of: evolveretechne
+    spec:
+      imagePullSecrets:
+        - name: gcp-artifact-registry
+      containers:
+        - name: site
+          image: us-central1-docker.pkg.dev/spotlessbinco/spotlessbinco/evolveretechne-site:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8787
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: evolveretechne
+  namespace: evolveretechne
+  labels:
+    app.kubernetes.io/name: evolveretechne
+    app.kubernetes.io/part-of: evolveretechne
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: evolveretechne
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

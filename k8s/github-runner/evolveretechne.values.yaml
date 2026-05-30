@@ -1,0 +1,118 @@
+# ARC runner scale-set for this repo.
+# Install/update with:
+#   kubectl apply -f k8s/github-runner/service-account.yaml
+#   kubectl apply -f k8s/github-runner/rbac.yaml
+#   helm upgrade --install evolveretechne-runner \
+#     oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set \
+#     --version 0.13.1 -n arc-runners -f k8s/github-runner/evolveretechne.values.yaml --wait
+controllerServiceAccount:
+  name: arc-gha-rs-controller
+  namespace: arc-systems
+githubConfigSecret: github-runner-secret
+githubConfigUrl: https://github.com/rileyseaburg/evolving_software
+maxRunners: 1
+minRunners: 0
+runnerScaleSetName: evolving-software-k8s
+template:
+  spec:
+    serviceAccountName: evolving-software-k8s-gha-rs-no-permission
+    restartPolicy: Never
+    terminationGracePeriodSeconds: 30
+    containers:
+      - name: runner
+        image: us-central1-docker.pkg.dev/spotlessbinco/rust-builder/github-actions-rust-runner:latest
+        imagePullPolicy: IfNotPresent
+        command:
+          - /home/runner/run.sh
+        env:
+          - name: ACTIONS_RUNNER_REQUIRE_JOB_CONTAINER
+            value: 'false'
+          - name: DOCKER_HOST
+            value: unix:///var/run/docker.sock
+          - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
+            value: '120'
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+            ephemeral-storage: 2Gi
+          limits:
+            cpu: 2000m
+            memory: 4Gi
+            ephemeral-storage: 16Gi
+        volumeMounts:
+          - mountPath: /home/runner/_work
+            name: work
+          - mountPath: /var/run
+            name: dind-sock
+    imagePullSecrets:
+      - name: gcp-artifact-registry
+    initContainers:
+      - name: init-dind-externals
+        image: us-central1-docker.pkg.dev/spotlessbinco/rust-builder/github-actions-rust-runner:latest
+        imagePullPolicy: IfNotPresent
+        command:
+          - cp
+        args:
+          - -r
+          - /home/runner/externals/.
+          - /home/runner/tmpDir/
+        volumeMounts:
+          - mountPath: /home/runner/tmpDir
+            name: dind-externals
+      - name: dind
+        image: docker:dind
+        restartPolicy: Always
+        securityContext:
+          privileged: true
+        env:
+          - name: DOCKER_GROUP_GID
+            value: '1001'
+        args:
+          - dockerd
+          - --host=unix:///var/run/docker.sock
+          - --group=$(DOCKER_GROUP_GID)
+        startupProbe:
+          exec:
+            command:
+              - docker
+              - info
+          failureThreshold: 24
+          initialDelaySeconds: 0
+          periodSeconds: 5
+        volumeMounts:
+          - mountPath: /home/runner/_work
+            name: work
+          - mountPath: /var/run
+            name: dind-sock
+          - mountPath: /home/runner/externals
+            name: dind-externals
+        resources:
+          requests:
+            ephemeral-storage: 2Gi
+          limits:
+            ephemeral-storage: 16Gi
+    volumes:
+      - emptyDir: {}
+        name: dind-sock
+      - emptyDir: {}
+        name: dind-externals
+      - emptyDir:
+          sizeLimit: 16Gi
+        name: work
+    nodeSelector:
+      arc-runner: enabled
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: arc-runner
+                  operator: In
+                  values:
+                    - enabled
+                - key: kubernetes.io/hostname
+                  operator: NotIn
+                  values:
+                    - k8s-worker-1
+                    - k8s-worker-4

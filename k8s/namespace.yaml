@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: evolveretechne
+  labels:
+    app.kubernetes.io/name: evolveretechne
+    app.kubernetes.io/part-of: evolveretechne
+    pod-security.kubernetes.io/enforce: baseline
