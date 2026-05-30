@@ -46,6 +46,12 @@ jobs:
             exit 1
           fi
 
+          if jq -e '.auths["${{ env.REGISTRY }}"].auth' ~/.docker/config.json >/dev/null; then
+            AUTH_DECODED=$(jq -r '.auths["${{ env.REGISTRY }}"].auth' ~/.docker/config.json | base64 -d)
+            USERNAME=${AUTH_DECODED%%:*}
+            PASSWORD=${AUTH_DECODED#*:}
+            printf '%s' "$PASSWORD" | docker login ${{ env.REGISTRY }} --username "$USERNAME" --password-stdin
+          fi
           docker push ${{ env.IMAGE }}:${{ github.sha }}
           docker push ${{ env.IMAGE }}:latest
 
