@@ -147,16 +147,16 @@ fn index_page() {
         "<section class='relative overflow-hidden px-6 py-24 sm:py-32'>" +
         "<div class='mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.05fr_.95fr] lg:items-center'>" +
         "<div>" + eyebrow("Evolvere Techne / Lavon, Texas") +
-        "<h1 class='mt-8 max-w-5xl text-5xl font-black tracking-tight text-white sm:text-7xl'>Turn the expensive manual work in your business into software that runs every day.</h1>" +
-        "<p class='mt-7 max-w-2xl text-xl leading-9 text-slate-300'>If your team is copying data between tools, chasing leads by hand, losing jobs in spreadsheets, or waiting on a developer who never ships, we build the custom system that fixes the bottleneck. Evolvere means to unfold and develop. Techne means skilled craft. Evolvere Techne means we evolve your business process into working software.</p>" +
-        "<div class='mt-10 flex flex-col gap-4 sm:flex-row'><a href='/contact' class='rounded-full bg-cyan-200 px-7 py-4 text-sm font-bold text-slate-950 shadow-xl shadow-cyan-500/20 hover:bg-white'>Book a build consult</a><a href='/work' class='rounded-full border border-white/15 px-7 py-4 text-sm font-bold text-white hover:border-cyan-200/60'>See what we fix</a></div>" +
+        "<h1 class='mt-8 max-w-5xl text-5xl font-black tracking-tight text-white sm:text-7xl'>Custom software for businesses that have outgrown spreadsheets, SaaS duct tape, and half-finished tools.</h1>" +
+        "<p class='mt-7 max-w-2xl text-xl leading-9 text-slate-300'>We design, build, and operate practical software for service businesses, B2B teams, startups, and operators who need more than another subscription. Internal tools, customer portals, AI workflows, integrations, mobile field apps, dashboards, and cloud platforms — built around how the business actually makes money.</p>" +
+        "<div class='mt-10 flex flex-col gap-4 sm:flex-row'><a href='/contact' class='rounded-full bg-cyan-200 px-7 py-4 text-sm font-bold text-slate-950 shadow-xl shadow-cyan-500/20 hover:bg-white'>Book a software consult</a><a href='/work' class='rounded-full border border-white/15 px-7 py-4 text-sm font-bold text-white hover:border-cyan-200/60'>See what we build</a></div>" +
         "</div>" +
         "<div class='glass rounded-[2.5rem] p-6'>" +
         "<div class='rounded-[2rem] border border-white/10 bg-slate-950 p-6'>" +
         "<div class='mb-5 flex items-center gap-2'><span class='h-3 w-3 rounded-full bg-red-400'></span><span class='h-3 w-3 rounded-full bg-yellow-300'></span><span class='h-3 w-3 rounded-full bg-emerald-300'></span><span class='ml-3 text-xs text-slate-500'>evolveretechne.com</span></div>" +
-        "<pre class='whitespace-pre-wrap text-sm leading-7 text-slate-300'><span class='text-cyan-200'>offer</span> {\n  diagnose: \"find the bottleneck\"\n  build: \"replace manual work\"\n  launch: \"ship a usable system\"\n  improve: \"measure, refine, repeat\"\n}</pre>" +
+        "<pre class='whitespace-pre-wrap text-sm leading-7 text-slate-300'><span class='text-cyan-200'>engagement</span> {\n  strategy: \"decide what should be software\"\n  product: \"design the workflow and interface\"\n  engineering: \"build the system end to end\"\n  operations: \"deploy, monitor, and improve\"\n}</pre>" +
         "</div>" +
-        "<div class='mt-6 grid grid-cols-3 gap-3'>" + stat("AI", "agentic products") + stat("Cloud", "deployable infra") + stat("UX", "polished apps") + "</div>" +
+        "<div class='mt-6 grid grid-cols-3 gap-3'>" + stat("Product", "web + SaaS") + stat("Ops", "internal tools") + stat("AI", "workflows") + "</div>" +
         "</div>" +
         "</div></section>" +
         capabilities_section() + proof_section() + process_section() + cta_section() +
@@ -166,25 +166,25 @@ fn index_page() {
 
 fn capabilities_section() {
     return "<section class='px-6 py-20'><div class='mx-auto max-w-7xl'>" +
-        "<div class='max-w-3xl'>" + eyebrow("Problems we solve") + "<h2 class='mt-6 text-4xl font-black tracking-tight text-white sm:text-5xl'>Custom software for the places your business leaks time, leads, and money.</h2><p class='mt-5 text-lg leading-8 text-slate-300'>We do not sell buzzwords. We look for the operational choke point, then build the app, automation, AI workflow, or integration that removes it.</p></div>" +
+        "<div class='max-w-3xl'>" + eyebrow("What we build") + "<h2 class='mt-6 text-4xl font-black tracking-tight text-white sm:text-5xl'>Software development for real business workflows, not vanity demos.</h2><p class='mt-5 text-lg leading-8 text-slate-300'>We help teams turn messy operations into usable products: tools employees adopt, portals customers understand, automations that reduce handoffs, and platforms that can be maintained after launch.</p></div>" +
         "<div class='mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3'>" +
-        service_card("01 / Stop Spreadsheet Chaos", "Internal tools that run the business", "Dashboards, portals, quoting tools, scheduling systems, and admin panels that replace scattered spreadsheets and tribal knowledge.") +
-        service_card("02 / Follow Up Faster", "AI and automation that does the busywork", "Lead routing, customer follow-up, document handling, reporting, and agent workflows that keep opportunities from slipping away.") +
-        service_card("03 / Quit Rebuilding", "Cloud systems that survive growth", "APIs, deployments, observability, CI/CD, and secure infrastructure so your software can scale without constant rescue missions.") +
-        service_card("04 / Coordinate The Field", "Mobile apps for teams outside the office", "iOS and field workflows for routes, uploads, checklists, realtime updates, and customer proof when the work happens on-site.") +
-        service_card("05 / Know What Is Working", "Analytics and optimization you can act on", "Route optimization, funnels, reporting, and decision tools that show where profit is coming from and where work is getting stuck.") +
-        service_card("06 / Build The Hard Parts", "Senior engineering for serious constraints", "Performance tooling, Rust services, media pipelines, integrations, and systems work when off-the-shelf software hits a wall.") +
+        service_card("01 / Internal Operations", "Tools your team actually uses", "Admin panels, quoting systems, scheduling workflows, inventory views, approvals, reporting, and role-based dashboards for the work that does not fit off-the-shelf software.") +
+        service_card("02 / Sales and Customer Workflows", "Follow-up without the copy-paste", "Lead intake, routing, CRM integrations, customer notifications, proposal flows, document handling, and automation that keeps revenue work moving.") +
+        service_card("03 / Product Engineering", "Web apps, SaaS, and portals", "Customer-facing products, authenticated portals, subscription flows, payments, APIs, admin consoles, and the boring details that make software usable.") +
+        service_card("04 / Field and Service Businesses", "Mobile workflows outside the office", "Dispatch, route workflows, photo uploads, checklists, job status, customer proof, and realtime updates for crews, technicians, drivers, and operators.") +
+        service_card("05 / Data and Decision Systems", "Dashboards that change behavior", "Operational reporting, KPI dashboards, forecasting, route and capacity planning, funnel visibility, and tools that show what to fix next.") +
+        service_card("06 / Platform and AI Engineering", "Harder systems when needed", "LLM workflows, agent tooling, media pipelines, Rust services, CI/CD, Kubernetes, observability, and integrations when the product needs serious engineering.") +
         "</div></div></section>"
 }
 
 fn proof_section() {
     return "<section id='work' class='px-6 py-20'><div class='mx-auto max-w-7xl rounded-[2.5rem] border border-white/10 bg-white/[0.03] p-8 sm:p-12'>" +
-        "<div class='flex flex-col gap-6 md:flex-row md:items-end md:justify-between'><div>" + eyebrow("Proof of range") + "<h2 class='mt-6 text-4xl font-black tracking-tight text-white'>You get a builder who has already wrestled with the hard parts.</h2></div><p class='max-w-2xl text-slate-300'>Most businesses do not need a giant agency. They need someone who can understand the money problem, choose the right tool, and ship the fix.</p></div>" +
+        "<div class='flex flex-col gap-6 md:flex-row md:items-end md:justify-between'><div>" + eyebrow("Consulting types") + "<h2 class='mt-6 text-4xl font-black tracking-tight text-white'>Bring us the business problem. We shape it into the right kind of software engagement.</h2></div><p class='max-w-2xl text-slate-300'>Some clients need a product team. Some need an integration specialist. Some need a senior engineer to rescue or replace a fragile system. The engagement changes, but the goal stays the same: useful software that moves the business.</p></div>" +
         "<div class='mt-10 grid gap-5 lg:grid-cols-2'>" +
-        work_card("CodeTether and A2A agent systems", "AI / MCP", "Multi-agent development workflows, model tooling, browser automation, task execution, and protocol-oriented AI infrastructure.") +
-        work_card("SpotlessBinCo and Route Funnels", "SaaS / Growth", "Route optimization, CRM-style workflows, paid acquisition automation, dashboards, payments, and mobile operations.") +
-        work_card("Qwen TTS and avatar media", "Voice / Video", "Speech generation, podcasts, avatar video generation, publishing flows, and media automation pipelines.") +
-        work_card("Kubernetes, Rust, and platform tooling", "Infra / Systems", "GitOps, Knative, CI images, Rust scanners, framework work, and deployment automation for resilient systems.") +
+        work_card("AI workflow and agent consulting", "AI / Automation", "LLM features, internal copilots, document workflows, browser automation, evaluation harnesses, and agentic systems tied to real business processes.") +
+        work_card("Service business and local-ops software", "Field / Ops", "Scheduling, routing, quoting, lead intake, CRM workflows, dispatch, payments, crew tools, dashboards, and customer communication systems.") +
+        work_card("Media, content, and workflow automation", "Media / Ops", "Speech, video, publishing flows, content operations, asset pipelines, approval workflows, and automation around repetitive production work.") +
+        work_card("Platform engineering and technical rescue", "Infra / Systems", "Cloud deployments, CI/CD, observability, performance work, Rust services, migration projects, and cleanup of brittle production systems.") +
         "</div></div></section>"
 }
 
@@ -203,8 +203,8 @@ fn cta_section() {
     return "<section id='contact' class='px-6 py-24'><div class='mx-auto max-w-5xl overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-cyan-200 via-emerald-200 to-white p-10 text-slate-950 sm:p-14'>" +
         "<p class='text-sm font-black uppercase tracking-[0.24em] text-slate-700'>Have a process that should not be manual?</p>" +
         "<h2 class='mt-5 text-4xl font-black tracking-tight sm:text-6xl'>If a better system would save money, create revenue, or give you your week back, let us build it.</h2>" +
-        "<p class='mt-6 max-w-3xl text-lg leading-8 text-slate-700'>Good first projects: quote builders, lead follow-up automation, internal dashboards, route workflows, AI document handling, customer portals, and rebuilds of software that is too slow or too fragile.</p>" +
-        "<div class='mt-9 flex flex-col gap-4 sm:flex-row'><a href='mailto:hello@evolveretechne.com' class='rounded-full bg-slate-950 px-7 py-4 text-sm font-bold text-white hover:bg-slate-800'>hello@evolveretechne.com</a><a href='/work' class='rounded-full border border-slate-950/20 px-7 py-4 text-sm font-bold text-slate-950 hover:bg-white/50'>See what we fix</a></div>" +
+        "<p class='mt-6 max-w-3xl text-lg leading-8 text-slate-700'>Good first engagements: internal tool buildouts, SaaS MVPs, customer portals, CRM and payment integrations, field-service workflows, AI document handling, dashboard/reporting systems, and rescue work for software that is too slow, too fragile, or not shipping.</p>" +
+        "<div class='mt-9 flex flex-col gap-4 sm:flex-row'><a href='mailto:hello@evolveretechne.com' class='rounded-full bg-slate-950 px-7 py-4 text-sm font-bold text-white hover:bg-slate-800'>hello@evolveretechne.com</a><a href='/work' class='rounded-full border border-slate-950/20 px-7 py-4 text-sm font-bold text-slate-950 hover:bg-white/50'>See what we build</a></div>" +
         "</div></section>"
 }
 
@@ -253,7 +253,7 @@ fn dashboard_page(username) {
     let safe_username = html_escape(username)
     let content = "<main class='px-6 py-24'><div class='mx-auto max-w-5xl glass rounded-[2.5rem] p-10'>" + eyebrow("Client workspace") +
         "<h1 class='mt-6 text-5xl font-black tracking-tight text-white'>Hello, " + safe_username + ".</h1>" +
-        "<p class='mt-5 max-w-2xl text-lg leading-8 text-slate-300'>Your Evolvere Techne project workspace is ready for the next iteration.</p>" +
+        "<p class='mt-5 max-w-2xl text-lg leading-8 text-slate-300'>Your Evolvere Techne workspace is ready for the next software engagement.</p>" +
         "</div></main>"
     return shell("Dashboard", username, content)
 }
