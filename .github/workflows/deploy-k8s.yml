@@ -46,14 +46,8 @@ jobs:
             exit 1
           fi
 
-          if command -v skopeo >/dev/null 2>&1; then
-            skopeo copy --dest-authfile ~/.docker/config.json docker-daemon:${{ env.IMAGE }}:${{ github.sha }} docker://${{ env.IMAGE }}:${{ github.sha }}
-            skopeo copy --dest-authfile ~/.docker/config.json docker-daemon:${{ env.IMAGE }}:latest docker://${{ env.IMAGE }}:latest
-          else
-            docker login ${{ env.REGISTRY }} --username "$(jq -r '.auths["${{ env.REGISTRY }}"].username // empty' ~/.docker/config.json)" --password-stdin < <(jq -r '.auths["${{ env.REGISTRY }}"].password // empty' ~/.docker/config.json)
-            docker push ${{ env.IMAGE }}:${{ github.sha }}
-            docker push ${{ env.IMAGE }}:latest
-          fi
+          docker push ${{ env.IMAGE }}:${{ github.sha }}
+          docker push ${{ env.IMAGE }}:latest
 
       - name: Apply namespace and pull secret
         run: |
