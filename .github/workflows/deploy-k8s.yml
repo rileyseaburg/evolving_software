@@ -18,10 +18,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Static TetherScript check
-        run: tetherscript inspect --ast server.tether >/tmp/server.ast
+        run: |
+          if ! command -v tetherscript >/dev/null 2>&1; then
+            cargo install tetherscript --version 0.1.0-alpha.12
+          fi
+          tetherscript inspect --ast server.tether >/tmp/server.ast
 
       - name: Build image
         run: |
+          cp ~/.cargo/bin/tetherscript ./tetherscript || true
           docker build \
             -t ${{ env.IMAGE }}:${{ github.sha }} \
             -t ${{ env.IMAGE }}:latest \
